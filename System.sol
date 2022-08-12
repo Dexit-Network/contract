@@ -1,8 +1,9 @@
-pragma solidity 0.6.4;
+//SPDX-License-Identifier: Unlicense
+pragma solidity ^0.8.9;
 
-import "./interface/ISystemReward.sol";
+//import "./interface/ISystemReward.sol";
 import "./interface/IRelayerHub.sol";
-import "./interface/ILightClient.sol";
+//import "./interface/ILightClient.sol";
 
 contract System {
 
@@ -17,7 +18,7 @@ contract System {
   uint8 constant public STAKING_CHANNELID = 0x08;
   uint8 constant public GOV_CHANNELID = 0x09;
   uint8 constant public SLASH_CHANNELID = 0x0b;
-  uint16 constant public bscChainID = 0x0060;
+  uint16 constant public BSC_CHAIN_ID = 0x0060;
 
   address public constant VALIDATOR_CONTRACT_ADDR = 0x0000000000000000000000000000000000001000;
   address public constant SLASH_CONTRACT_ADDR = 0x0000000000000000000000000000000000001001;

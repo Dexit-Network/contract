@@ -1,20 +1,19 @@
-pragma solidity 0.6.4;
+//SPDX-License-Identifier: Unlicense
+pragma solidity ^0.8.9;
 import "./System.sol";
 import "./lib/BytesToTypes.sol";
 import "./lib/Memory.sol";
 import "./interface/ISlashIndicator.sol";
-import "./interface/IApplication.sol";
+//import "./interface/IApplication.sol";
 import "./interface/IBSCValidatorSet.sol";
 import "./interface/IParamSubscriber.sol";
-import "./interface/ICrossChain.sol";
-import "./lib/CmnPkg.sol";
+//import "./interface/ICrossChain.sol";
+//import "./lib/CmnPkg.sol";
 import "./lib/RLPEncode.sol";
-import "./lib/SafeMath.sol";
 
 // Removed The IApplication
 contract SlashIndicator is ISlashIndicator, System, IParamSubscriber {
     using RLPEncode for *;
-    using SafeMath for uint256;
 
     uint256 public constant MISDEMEANOR_THRESHOLD = 50;
     uint256 public constant FELONY_THRESHOLD = 150;
@@ -187,18 +186,5 @@ contract SlashIndicator is ISlashIndicator, System, IParamSubscriber {
     {
         Indicator memory indicator = indicators[validator];
         return (indicator.height, indicator.count);
-    }
-
-    function encodeSlashPackage(address valAddr)
-        internal
-        view
-        returns (bytes memory)
-    {
-        bytes[] memory elements = new bytes[](4);
-        elements[0] = valAddr.encodeAddress();
-        elements[1] = uint256(block.number).encodeUint();
-        elements[2] = uint256(bscChainID).encodeUint();
-        elements[3] = uint256(block.timestamp).encodeUint();
-        return elements.encodeList();
     }
 }

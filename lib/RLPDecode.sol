@@ -1,4 +1,5 @@
-pragma solidity 0.6.4;
+//SPDX-License-Identifier: Unlicense
+pragma solidity ^0.8.9;
 
 library RLPDecode {
     uint8 constant STRING_SHORT_START = 0x80;
@@ -112,11 +113,11 @@ library RLPDecode {
         return result == 0 ? false : true;
     }
 
-    function toAddress(RLPItem memory item) internal pure returns (address) {
+    function toAddress(RLPItem memory item) internal pure returns (uint) {
         // 1 byte for the length prefix
         require(item.len == 21);
 
-        return address(toUint(item));
+        return toUint(item);
     }
 
     function toUint(RLPItem memory item) internal pure returns (uint) {

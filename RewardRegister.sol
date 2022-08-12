@@ -1,15 +1,14 @@
-// SPDX-License-Identifier: MIT
-pragma solidity 0.6.4;
+//SPDX-License-Identifier: Unlicense
+pragma solidity ^0.8.9;
 import "./System.sol";
-import "./lib/BytesToTypes.sol";
-import "./lib/Memory.sol";
+//import "./lib/BytesToTypes.sol";
+//import "./lib/Memory.sol";
 import "./interface/IRewardRegister.sol";
-import "./interface/IBSCValidatorSet.sol";
-import "./lib/SafeMath.sol";
+//import "./interface/IBSCValidatorSet.sol";
+//import "./lib/SafeMath.sol";
 
 contract RewardRegister is System, IRewardRegister{
-    using SafeMath for uint256;
-
+    
     /**************************rewardRegister***********************/
     mapping(address => address) public rewardAddresses;
     mapping(address => uint256) public rewardAmountOwner;
@@ -21,7 +20,7 @@ contract RewardRegister is System, IRewardRegister{
         alreadyInit = true;
     }
 
-    function registerContract(address contractAddr, address payable rewardAddr)
+    function registerContract(address contractAddr, address rewardAddr)
         external
         returns (bool)
     {
@@ -61,7 +60,7 @@ contract RewardRegister is System, IRewardRegister{
         override
         returns (bool)
     {
-        uint256 rewardPerOwner = rewardOwners.div(eligibleOwners.length);
+        uint256 rewardPerOwner = rewardOwners / eligibleOwners.length;
         for (uint256 i = 0; i < eligibleOwners.length; i++) {
             rewardAmountOwner[eligibleOwners[i]] += rewardPerOwner;
         }

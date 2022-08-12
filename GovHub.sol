@@ -1,21 +1,23 @@
-pragma solidity 0.6.4;
+//SPDX-License-Identifier: Unlicense
+pragma solidity ^0.8.9;
 import "./System.sol";
-import "./lib/BytesToTypes.sol";
-import "./lib/Memory.sol";
-import "./lib/BytesLib.sol";
-import "./interface/IParamSubscriber.sol";
-import "./interface/IApplication.sol";
+//import "./lib/BytesToTypes.sol";
+//import "./lib/Memory.sol";
+//import "./lib/BytesLib.sol";
+//import "./interface/IParamSubscriber.sol";
+//import "./interface/IApplication.sol";
 import "./lib/RLPDecode.sol";
-import "./lib/CmnPkg.sol";
+//import "./lib/CmnPkg.sol";
 import "./interface/IBSCValidatorSet.sol";
-import "./lib/SafeMath.sol";
+//import "./lib/SafeMath.sol";
 
 contract GovHub is System {
   using RLPDecode for *;
-  using SafeMath for uint256;
     
     IBSCValidatorSet public ibsc;
    
+    uint256 public START_VOTE_PROPOSAL_TIME;
+
     struct ProposalInfo {
         // who propose this proposal
         address payable proposer;
@@ -39,7 +41,7 @@ contract GovHub is System {
         // number reject this proposal
         uint16 reject;
         // is passed
-        bool ispassed;
+        bool isPassed;
         // means you can get proposal of current vote.
         bool resultExist;
     }
@@ -48,6 +50,11 @@ contract GovHub is System {
         address voter;
         uint256 voteTime;
         bool auth;
+    }
+
+    struct StartVoteInfo {
+        address voter;
+        uint256 voteTime;
     }
 
     struct activeProposal {
@@ -61,9 +68,11 @@ contract GovHub is System {
     mapping(address => mapping(bytes32 => VoteInfo)) public votes;
     mapping(address => bytes32[]) public userProposals;
     mapping(address => bool) public pass;
+
+    mapping(address => mapping(bytes32 => StartVoteInfo)) public startvotes;
   
     uint256 public MaxValidators;//= ibsc.getMaxValidators();
-    uint256 public minimumStakeAmount;//= ibsc.getminimumStakeAmount();
+    uint256 public minimumStakeAmount;//= ibsc.getMinimumStakeAmount();
 
     address[] public highestValidators; //ibsc.getValidators();
 
@@ -106,26 +115,20 @@ contract GovHub is System {
     }
 
 /*******************Functions*******************/
-    function chcekProposal() public view returns (bytes32[] memory) {
+    function chcekProposal() external view returns (bytes32[] memory) {
         return ProposalsArray;
     }
 
     function authchangevalues(bytes32 id) private{
-    
         if (
             keccak256(bytes(proposals[id].variable_name)) ==
-            keccak256(bytes("minimumStakeAmount"))
-        ) {
-            ibsc.updateVotingValues(proposals[id].variable_name, proposals[id].variable_value);        
-        }
-        if (
+            keccak256(bytes("minimumStakeAmount")) ||
             keccak256(bytes(proposals[id].variable_name)) ==
             keccak256(bytes("MaxValidators"))
-        ) {
+            ) {
             ibsc.updateVotingValues(proposals[id].variable_name, proposals[id].variable_value);
-       
         }
-       pass[msg.sender] = false;
+        pass[msg.sender] = false;
     }
 
     function createProposal(
@@ -136,7 +139,7 @@ contract GovHub is System {
         ibsc = IBSCValidatorSet(VALIDATOR_CONTRACT_ADDR);
         delete highestValidators;
         highestValidators = ibsc.getValidators();
-        address payable dst = msg.sender;
+        address dst = msg.sender;
         (IBSCValidatorSet.Status status) = ibsc.getStatus(dst);
         require(status == IBSCValidatorSet.Status.Staked, "Only Active Validator"); //Only Active Validator
         //Validator can only Made these two proposals.onlyValidator(Compare 2 string)
@@ -149,26 +152,26 @@ contract GovHub is System {
         //value should be 1000DXT for creating a proposal
         require(msg.value == 1 ether, "Must pay 1 DXT");
         bytes32[] memory UserProposal = userProposal();
-
+        //Checks that validator can only create proposal after 3 days once they create proposal
+        for (uint256 i = 0; i < UserProposal.length; i++) {
+            if (
+                keccak256(
+                    bytes(proposals[UserProposal[i]].variable_name)
+                ) ==
+                keccak256(bytes("minimumStakeAmount")) &&
+                (block.timestamp <
+                    proposals[UserProposal[i]].createTime +
+                        proposalLastingPeriod)
+            ) {
+                bool isexist = false;
+                require(isexist == true, "proposal created before");
+            }
+        }
+        
         //Restrictions for create proposal for minimum stake amount
         if (keccak256(bytes(vari_name)) == keccak256(bytes("minimumStakeAmount"))) {
-            require(value >= 1, "minimumStakeAmount can't be less then 1");
-            //Checks that validator can only create proposal after 7 days once they creat proposal
-            for (uint256 i = 0; i < UserProposal.length; i++) {
-                if (
-                    keccak256(
-                        bytes(proposals[UserProposal[i]].variable_name)
-                    ) ==
-                    keccak256(bytes("minimumStakeAmount")) &&
-                    (block.timestamp <
-                        proposals[UserProposal[i]].createTime +
-                            proposalLastingPeriod)
-                ) {
-                    bool isexist = false;
-                    require(isexist == true, "proposal created before");
-                }
-            }
-
+            require(value >= 1, "minimumStakeAmount can't be less than 1");
+            
             value = value * 1 ether; //Convert the value wei into eather
            
             // Fetch highestAmount of activevalidator
@@ -181,24 +184,10 @@ contract GovHub is System {
             }
             //Validator can't creat proposal that proposal amount > highCoin
             require(value <= highcoin, "set less than highcoin");
-             minimumStakeAmount = ibsc.getminimumStakeAmount();
+             minimumStakeAmount = ibsc.getMinimumStakeAmount();
         }
 
-        if (keccak256(bytes(vari_name)) == keccak256(bytes("MaxValidators"))) {
-            for (uint256 i = 0; i < UserProposal.length; i++) {
-                if (
-                    keccak256(
-                        bytes(proposals[UserProposal[i]].variable_name)
-                    ) ==
-                    keccak256(bytes("MaxValidators")) &&
-                    (block.timestamp <
-                        proposals[UserProposal[i]].createTime +
-                            proposalLastingPeriod)
-                ) {
-                    bool isexist = false;
-                    require(isexist == true, "proposal created before");
-                }
-            }
+        if (keccak256(bytes(vari_name)) == keccak256(bytes("MaxValidators"))) {            
             if (value < 3 || value > ibsc.getCurrentValidators().length || value > 51)
                 revert("Invalid Value");
                 MaxValidators = ibsc.getMaxValidators();
@@ -220,13 +209,13 @@ contract GovHub is System {
             (uint256 coins) = ibsc.getCoins(currentaddr);
             activeInfo.isEligible[currentaddr] = true; //  Set IsEligible
             activeInfo.individualCoins[currentaddr] = coins; // Update individualCoins Map
-            updateCoins = updateCoins.add(coins);
+            updateCoins = updateCoins + coins;
         }
         activeInfo.totalVotePower = updateCoins;
        
         // Set into the mapping
         ProposalInfo memory proposal;
-        proposal.proposer = dst;
+        proposal.proposer = payable(dst);
         proposal.dst = dst;
         proposal.details = details;
         proposal.createTime = block.timestamp;
@@ -246,23 +235,41 @@ contract GovHub is System {
 
     //Will return current values of minimumStakeAmount & MaxValidators
     function currentValue(string memory vari_name)
-        public
+        external
         view
-        returns (uint256)
+        returns (uint256 returnValue)
     {
         if (
             keccak256(bytes(vari_name)) ==
             keccak256(bytes("minimumStakeAmount"))
         ) {
-            return (minimumStakeAmount);
+            returnValue = minimumStakeAmount;
+            return returnValue;
         }
         if (keccak256(bytes(vari_name)) == keccak256(bytes("MaxValidators"))) {
-            return (MaxValidators);
+            returnValue = MaxValidators;
+            return returnValue;
         }
     }
     //List of proposal validators
     function userProposal() public view returns (bytes32[] memory) {
         return userProposals[msg.sender];
+    }
+
+    //Start Voting to proposal
+    function startVoteProposal(bytes32 id) external {
+
+        activeProposal storage activeInfo = activeProposalMap[id];
+        bool isEligible = activeInfo.isEligible[msg.sender];
+        require(isEligible == true, "Not Eligible"); // Check Present in Eligible List
+        require(proposals[id].access == true, "Voting completed for this ID"); //Check if Proposal is Comleted or Not for this id
+        require(proposals[id].createTime != 0, "Proposal not exist"); // Check for Proposal Exist
+        require(votes[msg.sender][id].voteTime == 0, "You can't vote for a proposal twice"); // Check Can't Vote for Same Proposal Twice
+        require(block.timestamp < proposals[id].createTime + proposalLastingPeriod, "Proposal Expired"); //Checks Proposal is expired or Not
+        
+        //Store data into the mapping votes
+        startvotes[msg.sender][id].voteTime = block.timestamp;
+        startvotes[msg.sender][id].voter = msg.sender;
     }
 
     //All Current Highest  Validators will vote to that proposal
@@ -273,6 +280,9 @@ contract GovHub is System {
         bool auth;
         activeProposal storage activeInfo = activeProposalMap[id];
         bool isEligible = activeInfo.isEligible[msg.sender];
+        
+        require((startvotes[msg.sender][id].voteTime + 48 hours) <= block.timestamp, "You can't vote for a proposal before time lock"); // Check Can't Vote before Start Vote Proposal Time 48 hours
+
         require(isEligible == true, "Not Eligible"); // Check Present in Eligible List
         require(proposals[id].access == true, "Voting completed for this ID"); //Check if Proposal is Comleted or Not for this id
         require(proposals[id].createTime != 0, "Proposal not exist"); // Check for Proposal Exist
@@ -324,7 +334,7 @@ contract GovHub is System {
             proposals[id].resultExist = true;
             proposals[id].proposer.transfer(1 ether);
             authchangevalues(id);
-            proposals[id].ispassed = true;
+            proposals[id].isPassed = true;
             proposals[id].access = false;
             emit LogPassProposal(id, proposals[id].dst, block.timestamp);
             return true;
@@ -332,7 +342,7 @@ contract GovHub is System {
         //If voting is dis-agreed by 51% calculating votingPower then update the mapping
         if (proposals[id].votePowerOfDisagree >= (totalVotePower / 2) + 1) {
             proposals[id].resultExist = true;
-            proposals[id].ispassed = false;
+            proposals[id].isPassed = false;
             proposals[id].access = false;
             emit LogRejectProposal(id, proposals[id].dst, block.timestamp);
         }
@@ -340,7 +350,7 @@ contract GovHub is System {
     }
 
     function getActiveProposal(bytes32 _id)
-        public
+        external
         view
         returns (
             bool,

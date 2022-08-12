@@ -1,4 +1,5 @@
-pragma solidity 0.6.4;
+//SPDX-License-Identifier: Unlicense
+pragma solidity ^0.8.9;
 
 interface IBSCValidatorSet {
 
@@ -16,7 +17,7 @@ interface IBSCValidatorSet {
         uint256 amount; // self amount
         uint256 coins; //  self + delegators
         uint256 income; // self income
-        uint256 TotalIncome; // total income
+        uint256 totalincome; // total income
         address[] delegators;
   }
 
@@ -28,7 +29,7 @@ interface IBSCValidatorSet {
   
   function highestCoinsInCurrentValidatorsNotInTopValidator() external view returns (uint256, uint256, address);
 
-  function removeFromHighestValidatorList(address val) external;
+  //function removeFromHighestValidatorList(address val) internal;
 
   function isTopValidator(address who) external view returns (bool);
 
@@ -38,13 +39,13 @@ interface IBSCValidatorSet {
 
   function getStatus(address val) external view returns ( Status );
   
-  function _onlyValidator(address addr) external view;
+  function checkOnlyValidator(address addr) external view;
 
   function isActiveValidator(address who) external view returns (bool);
 
   function getMaxValidators() external view returns (uint256);
 
-  function getminimumStakeAmount() external view returns (uint256);
+  function getMinimumStakeAmount() external view returns (uint256);
 
   function getValidators() external  view returns (address[] memory);
 
