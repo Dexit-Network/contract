@@ -217,7 +217,7 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
                 "Must Stake 10000 DXT or More"
             );
             valInfo.validator = staker;
-            valInfo.status = Status.Created;
+            //valInfo.status = Status.Created;
             valInfo.amount = valInfo.amount + stakeamount;
             valInfo.coins = valInfo.coins + stakeamount;
         } else if (
@@ -296,6 +296,7 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
         Validator storage valInfo = validatorInfo[validator];
         Delegator storage stakeInfo = stakingInfo[staker][validator];
 
+        require(validator != msg.sender, "Validator can not stake as a delegator");
         require(stakeamount > 0, "Can't stake 0 DXT");
         require(this.isActiveValidator(validator), "Validator Not Exist");
         require(Status.Staked == valInfo.status, "Validator Not Staked");
