@@ -115,7 +115,7 @@ contract GovHub is System {
     }
 
 /*******************Functions*******************/
-    function chcekProposal() external view returns (bytes32[] memory) {
+    function checkProposal() external view returns (bytes32[] memory) {
         return ProposalsArray;
     }
 
@@ -158,11 +158,8 @@ contract GovHub is System {
                 keccak256(
                     bytes(proposals[UserProposal[i]].variable_name)
                 ) ==
-                keccak256(bytes("minimumStakeAmount")) &&
-                (block.timestamp <
-                    proposals[UserProposal[i]].createTime +
-                        proposalLastingPeriod)
-            ) {
+                keccak256(bytes(vari_name))){
+                require(block.timestamp >= proposals[UserProposal[i]].createTime + proposalLastingPeriod, "proposal created before");
                 bool isexist = false;
                 require(isexist == true, "proposal created before");
             }

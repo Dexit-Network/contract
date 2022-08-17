@@ -146,7 +146,6 @@ contract SlashIndicator is ISlashIndicator, System, IParamSubscriber {
         external
         override
         onlyInit
-        onlyGov
     {
         if (Memory.compareStrings(key, "misdemeanorThreshold")) {
             require(

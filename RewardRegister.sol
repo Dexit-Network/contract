@@ -22,6 +22,7 @@ contract RewardRegister is System, IRewardRegister{
 
     function registerContract(address contractAddr, address rewardAddr)
         external
+        virtual
         returns (bool)
     {
         require(
@@ -32,7 +33,7 @@ contract RewardRegister is System, IRewardRegister{
             rewardAddresses[contractAddr] == address(0),
             "Already registered"
         );
-        require(isContract(contractAddr), "contractAddr isn't contract");
+        //require(isContract(contractAddr)), "contractAddr isn't contract");
         rewardAddresses[contractAddr] = rewardAddr;
         rewardAmountOwner[rewardAddr] = 0;
         return true;

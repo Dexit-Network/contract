@@ -24,7 +24,7 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
     uint256 public constant INIT_BURN_RATIO = 1;
     uint256 public burnRatio;
     bool public burnRatioInitialized;
-
+    
     //Delegator Struct
     struct Delegator {
         address delegatorAddress; //  delegator self address
@@ -125,7 +125,8 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
         notZeroAddress
     {
         require(highestValidators.length > 0, "Highest validators should not be empty.");
-
+        require(valAddr != address(0), "Zero address");
+        
         Validator storage valInfo = validatorInfo[valAddr];
         
         uint256 value = msg.value;
@@ -176,7 +177,7 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
 
         uint256 percentageToTransfer = valInfo.amount * 10000 / UpdatedCoins;
 
-        uint256 rewardAmount = value * percentageToTransfer / 100;
+        uint256 rewardAmount = value * percentageToTransfer / 10000;
 
         valInfo.income = valInfo.income + rewardAmount; // Reseting income of validator
 
@@ -801,7 +802,7 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
     function removeFromHighestValidatorList(address val) internal {
         uint256 n = highestValidators.length;
         require(n>3, "Cannot have less than 3 validators");
-        for (uint256 k = 0; k < n && n > 1; k++) {
+        for (uint256 k = 0; k < n; k++) {
             if (val == highestValidators[k]) {
                 if (k != n - 1) {
                     highestValidators[k] = highestValidators[n - 1]; //Swapping of addresses and plced unstake validator into last index so that we can pop.
@@ -815,7 +816,8 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
 
     function removeFromCurrentValidatorList(address val) private {
         uint256 n = currentValidators.length;
-        for (uint256 i = 0; i < n && n > 1; i++) {
+        require(n>3, "Cannot have less than 3 validators");
+        for (uint256 i = 0; i < n; i++) {
             if (val == currentValidators[i]) {
                 if (i != n - 1) {
                     currentValidators[i] = currentValidators[n - 1];
