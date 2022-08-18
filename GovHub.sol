@@ -181,13 +181,13 @@ contract GovHub is System {
             }
             //Validator can't creat proposal that proposal amount > highCoin
             require(value <= highcoin, "set less than highcoin");
-             minimumStakeAmount = ibsc.getMinimumStakeAmount();
+             minimumStakeAmount = ibsc.minimumStakeAmount();
         }
 
         if (keccak256(bytes(vari_name)) == keccak256(bytes("MaxValidators"))) {            
             if (value < 3 || value > ibsc.getCurrentValidators().length || value > 51)
                 revert("Invalid Value");
-                MaxValidators = ibsc.getMaxValidators();
+                MaxValidators = ibsc.MaxValidators();
         }
         
         // generate proposal id

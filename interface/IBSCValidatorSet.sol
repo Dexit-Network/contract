@@ -43,9 +43,9 @@ interface IBSCValidatorSet {
 
   function isActiveValidator(address who) external view returns (bool);
 
-  function getMaxValidators() external view returns (uint256);
+  function MaxValidators() external view returns (uint256);
 
-  function getMinimumStakeAmount() external view returns (uint256);
+  function minimumStakeAmount() external view returns (uint256);
 
   function getValidators() external  view returns (address[] memory);
 

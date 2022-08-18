@@ -906,13 +906,13 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
     }
 
   /**************getter methods*******************************/
-    function getMinimumStakeAmount() public override view returns (uint256) {
+    /*function getMinimumStakeAmount() public override view returns (uint256) {
         return minimumStakeAmount;
-    }
+    }*/
 
-    function getMaxValidators() public override view returns (uint256) {
+    /*function getMaxValidators() public override view returns (uint256) {
         return MaxValidators;
-    }
+    }*/
 
     function getValidators() external override view returns (address[] memory) {
         return highestValidators;
