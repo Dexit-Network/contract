@@ -766,15 +766,15 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
             if (highCoin > lowCoin) {
                 highestValidators[lowIdx] = addValAddress;
             }
-
-            // Reset Punish Record
-            punishInfo.jailedTime = 0;
-            punishInfo.index = 0;
-            punishInfo.isPunished = false;
-
-            removeFromPunishValidator(requester); // Remove From Punish Record
-            //votePower = calcVotePower();
         }
+
+        // Reset Punish Record
+        punishInfo.jailedTime = 0;
+        punishInfo.index = 0;
+        punishInfo.isPunished = false;
+
+        removeFromPunishValidator(requester); // Remove From Punish Record
+        //votePower = calcVotePower();
     }
 
     //Function to distribute reward income
