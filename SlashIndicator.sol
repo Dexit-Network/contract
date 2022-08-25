@@ -3,16 +3,16 @@ pragma solidity ^0.8.9;
 import "./System.sol";
 import "./lib/BytesToTypes.sol";
 import "./lib/Memory.sol";
-import "./interface/ISlashIndicator.sol";
+//import "./interface/ISlashIndicator.sol";
 //import "./interface/IApplication.sol";
 import "./interface/IBSCValidatorSet.sol";
-import "./interface/IParamSubscriber.sol";
+//import "./interface/IParamSubscriber.sol";
 //import "./interface/ICrossChain.sol";
 //import "./lib/CmnPkg.sol";
 import "./lib/RLPEncode.sol";
 
 // Removed The IApplication
-contract SlashIndicator is ISlashIndicator, System, IParamSubscriber {
+contract SlashIndicator is System {
     using RLPEncode for *;
 
     uint256 public constant MISDEMEANOR_THRESHOLD = 50;
@@ -78,7 +78,8 @@ contract SlashIndicator is ISlashIndicator, System, IParamSubscriber {
 
     // To prevent validator misbehaving and leaving, do not clean slash record to zero, but decrease by felonyThreshold/DECREASE_RATE .
     // Clean is an effective implement to reorganize "validators" and "indicators".
-    function clean()
+    /* Removed this function because it was not being called from MyGov Contract. */
+    /*function clean()
         external
         override(ISlashIndicator)
         onlyValidatorContract
@@ -139,13 +140,15 @@ contract SlashIndicator is ISlashIndicator, System, IParamSubscriber {
             j--;
         }
         emit indicatorCleaned();
-    }
+    }*/
 
     /*********************** Param update ********************************/
-    function updateParam(string calldata key, bytes calldata value)
+    /* Removed this function because it was not being called from MyGov Contract. */
+    /*function updateParam(string calldata key, bytes calldata value)
         external
         override
         onlyInit
+        onlyGov
     {
         if (Memory.compareStrings(key, "misdemeanorThreshold")) {
             require(
@@ -175,7 +178,7 @@ contract SlashIndicator is ISlashIndicator, System, IParamSubscriber {
             require(false, "unknown param");
         }
         emit paramChange(key, value);
-    }
+    }*/
 
     /*********************** query api ********************************/
     function getSlashIndicator(address validator)
