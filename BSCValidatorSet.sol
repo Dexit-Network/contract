@@ -177,7 +177,7 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
 
         uint256 percentageToTransfer = valInfo.amount * 10000 / UpdatedCoins;
 
-        uint256 rewardAmount = value * percentageToTransfer / 100;
+        uint256 rewardAmount = value * percentageToTransfer / (100 * 10000);
 
         valInfo.income = valInfo.income + rewardAmount; // Reseting income of validator
 
@@ -648,7 +648,7 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
           
             uint256 percentageToTransfer = stakeamount * 10000 / totalCoins;
             
-            uint256 rewardDelegatorAmount = rewardAmount * percentageToTransfer / 100;
+            uint256 rewardDelegatorAmount = rewardAmount * percentageToTransfer / (100 * 10000);
 
             stakeInfo.income = stakeInfo.income + rewardDelegatorAmount; // Reseting income of delegator
             stakeInfo.totalincome = stakeInfo.totalincome+ rewardDelegatorAmount;
