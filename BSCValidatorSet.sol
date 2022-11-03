@@ -41,6 +41,8 @@ contract BSCValidatorSet is IBSCValidatorSet, System, ReentrancyGuard {
     mapping(address => mapping(address => Delegator)) stakingInfo;
     //Get time of validator & delegator claiming reward
     mapping(address => uint256) public rewardClaimRecords;
+    mapping(address => uint256) public rewardClaimRecordsValidator;
+    mapping(address => uint256) public rewardClaimRecordsDelegator;
 
     address[] public currentValidators; // All Validators
     address[] public highestValidators; // Only Top 21

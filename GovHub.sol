@@ -318,8 +318,9 @@ contract GovHub is System {
         } else {
             proposals[id].reject += 1;
         }
-        if (pass[proposals[id].dst] || proposals[id].resultExist) {
-            return true; //Do nothing if dst already passed or rejected.
+        
+        if (pass[id][proposals[id].dst] || proposals[id].resultExist) {
+            return true;
         }
 
         // Total Coins Proposal ID

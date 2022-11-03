@@ -1,20 +1,17 @@
-//SPDX-License-Identifier: Unlicense
+// SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.9;
 import "./System.sol";
-//import "./lib/BytesToTypes.sol";
-//import "./lib/Memory.sol";
 import "./interface/IRewardRegister.sol";
-//import "./interface/IBSCValidatorSet.sol";
-//import "./lib/SafeMath.sol";
+import "./interface/IBSCValidatorSet.sol";
 
 contract RewardRegister is System, IRewardRegister{
-    
-    /**************************rewardRegister***********************/
+
     mapping(address => address) public rewardAddresses;
     mapping(address => uint256) public rewardAmountOwner;
-    mapping(address => uint256) public rewardClaimRecords;
+    mapping(address => uint256) public rewardClaimRecordsOwners;
     address[] eligibleOwners;
-    uint64 public constant RewardClaimingPeriod = 21600; //24 hrs 21600
+    uint64 public constant REWARD_CLAIMING_PERIOD = 28800; //24 hrs 28800 blocks
+    mapping(address => address) public contractsRecord;
 
      function init() external onlyNotInit {
         alreadyInit = true;
@@ -22,7 +19,6 @@ contract RewardRegister is System, IRewardRegister{
 
     function registerContract(address contractAddr, address rewardAddr)
         external
-        virtual
         returns (bool)
     {
         require(
@@ -32,12 +28,18 @@ contract RewardRegister is System, IRewardRegister{
         require(
             rewardAddresses[contractAddr] == address(0),
             "Already registered"
-        );
-        //require(isContract(contractAddr)), "contractAddr isn't contract");
+        ); 
+        require(isContract(contractAddr), "contractAddr isn't contract");
+        require(contractsRecord[contractAddr] == msg.sender, "Only deployer can register");
         rewardAddresses[contractAddr] = rewardAddr;
         rewardAmountOwner[rewardAddr] = 0;
         return true;
     }
+    
+    function pushContractRecord(address contAddr, address owner) external override onlyValidatorContract returns(bool){
+        contractsRecord[contAddr] = owner;
+        return true;
+    } 
 
     function checkEligible(address[] calldata contractAddr)
         external
@@ -47,8 +49,8 @@ contract RewardRegister is System, IRewardRegister{
     {
         delete eligibleOwners;
         for (uint256 i = 0; i < contractAddr.length; i++) {
-            if (rewardAddresses[contractAddr[i]] != address(0x0)) {
-                address owner = rewardAddresses[contractAddr[i]];
+            address owner = rewardAddresses[contractAddr[i]];
+            if (owner != address(0x0)) {
                 eligibleOwners.push(owner);
             }
         }
@@ -75,15 +77,15 @@ contract RewardRegister is System, IRewardRegister{
             "Nothing to claim or Not Registered "
         );
         uint256 reward = rewardAmountOwner[owner];
-        uint256 oldClaimTime = rewardClaimRecords[owner];
+        uint256 oldClaimTime = rewardClaimRecordsOwners[owner];
         if (oldClaimTime == 0) {
-            rewardClaimRecords[owner] = block.number;
+            rewardClaimRecordsOwners[owner] = block.number;
             rewardAmountOwner[owner] = 0;
             return reward;
         } else {
-            uint256 endTime = oldClaimTime + RewardClaimingPeriod;
+            uint256 endTime = oldClaimTime + REWARD_CLAIMING_PERIOD;
             require(block.number >= endTime, "Claim after 24 hours");
-            rewardClaimRecords[owner] = block.number;
+            rewardClaimRecordsOwners[owner] = block.number;
             rewardAmountOwner[owner] = 0;
             return reward;
         }   
